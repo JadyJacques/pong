@@ -1,0 +1,298 @@
+<html>
+<head><title>Pong</title></head>
+<body bgcolor= black onLoad="init();">
+<br>
+<br>
+<br>
+<br>
+<br>
+	<center>
+    <canvas id="demoCanvas" width="640" height="480"> 
+        alternate content
+    </canvas>
+    <script src="lib/createjs-2013.05.14.min.js"></script>
+    <script>
+	//leticia= ajudou na função score, pesquisou a lógica de play/pause
+	//jady= programou toda a base do código e explicou a lógica
+	//lohaine= fez as imagens
+	//lincoln= fez as imagens
+	//julia= pesquisou códigos para aprimorar o jogo
+	
+		var stage;
+		var background;
+		
+		var player1 = new createjs.Bitmap("images/player1.png"); // jogador 1
+		var player2 = new createjs.Bitmap("images/player2.png"); // jogador 2
+		var moveUp1 = false;
+		var moveDown1 = false;
+		var moveUp2 = false;
+		var moveDown2 = false;
+		var playerSpeed1 = 10;
+		var playerSpeed2 = 10;
+		
+		var ball = new createjs.Bitmap("images/ball.png"); //bola
+		var ballSpeedX;
+		var ballSpeedY;3
+		
+			
+		var score1 = 0;// inserção do score dentro do jogo para os dois players
+		var score2 = 0;
+		var text1 = new createjs.Text("Pontos:" + score1 , "24px Arial", "pink");
+		var text2 = new createjs.Text("Pontos:" + score2 , "24px Arial", "pink");
+		
+		// escolha de nível
+	var escolhadenivel = prompt("Escolha a dificuldade: (1)Easy, (2)Medium, (3)Hard");
+	
+	switch (escolhadenivel) //escolha de dificuldade no jogo, dependendo do número a velocidade da bola irá aumentar
+	{
+	   case "1":
+	      ballSpeedX = 4;
+	      ballSpeedY = 4;
+	      break;
+		  
+	   case "2":
+	      ballSpeedX = 6;
+	      ballSpeedY = 6;
+	      break;
+		  
+	   case "3":
+		  ballSpeedX = 10;
+	      ballSpeedY = 10;
+	      break;
+		  
+	    default:
+	      alert("Digite, corretamente, o número correspondente à dificuldade");
+	      window.location.reload();
+	      break;
+	}
+        function init() 
+		{
+			stage = new createjs.Stage("demoCanvas");		
+			CreateBackground();
+			CreatePlayers();
+			CreateBall();
+			CreateText()	
+			
+			
+			createjs.Ticker.setFPS(60); //Intervalo = 1000ms / 30fps
+			createjs.Ticker.addEventListener("tick", _tick);
+			createjs.Sound.registerSound("Sound/wall.mp3", "wall")
+			createjs.Sound.registerSound("Sound/hit.mp3" , "hit")
+			createjs.Sound.registerSound("sound/playerScore.mp3" , "score");
+        }
+		
+		function _tick(event)
+		{	
+			UpdatePlayer1(); // jogador 1
+			UpdatePlayer2(); // jogador 2
+			UpdateBall();
+			UpdateScore();
+			stage.update();	
+		}
+		
+		function CreateBackground()
+		{
+			background = new createjs.Bitmap("images/background.jpg");
+			stage.addChild(background);
+		}
+		
+		document.addEventListener("keydown", _keyDown, true);
+		document.addEventListener("keyup", _keyUp, true);
+		
+		function _keyDown(event)
+		{
+			switch(event.keyCode)
+			{
+				
+				case 38: moveUp1 = true; //jogador 1 pra cima
+				break; 
+				case 40: moveDown1 = true; //jogador 1 pra baixo
+				break; 
+				case 87: moveUp2 = true; //jogador 2 pra cima
+				break; 
+				case 83: moveDown2 = true; //jogador 2 pra baixo
+				break; 
+			}
+		}
+		
+		function _keyUp(event)
+		{
+			switch(event.keyCode)
+			{
+			
+				case 38: moveUp1 = false;
+				break; 
+				case 40: moveDown1 = false;
+				break; 
+				case 87: moveUp2 = false;
+				break; 
+				case 83: moveDown2 = false;
+				break; 
+			}
+		}
+		
+		function CreatePlayers()
+		{
+			player1.x = (stage.canvas.width / 2 * 2) - (player2.image.width);
+			player1.y = 0;
+			
+			player2.x = 0;
+			player2.y = 0;
+			
+			stage.addChild(player1);
+			stage.addChild(player2);
+		}
+		
+		function UpdatePlayer1() // atualização do player 1
+		{
+			if(moveUp1)
+			{
+				player1.y -= playerSpeed1;
+			}
+			else if(moveDown1)
+			{
+				player1.y += playerSpeed1;
+			}
+		//Colisão player1 com a tela.
+			if (player1.y < 0)
+			{
+				player1.y = 0;
+			}	
+			else if (player1.y + player1.image.height > stage.canvas.height)
+			{
+				player1.y = stage.canvas.height - player1.image.height;
+			}
+		}
+		
+		function UpdatePlayer2() //atualização do player 2
+		{
+			if(moveUp2)
+			{
+				player2.y -= playerSpeed2;
+			}
+			else if(moveDown2)
+			{
+				player2.y += playerSpeed2;
+			}
+			//Colisão player2 com a tela.
+			if (player2.y < 0)
+			{
+				player2.y = 0;
+			}	
+			if (player2.y + player2.image.height > stage.canvas.height)
+			{
+				player2.y = stage.canvas.height - player2.image.height;
+			}
+		}
+		
+		function CreateBall()
+		{
+			ball.x = (stage.canvas.width / 2) - (ball.image.width / 2);
+			ball.y = (stage.canvas.height / 2) - (ball.image.height / 2);
+			
+			stage.addChild(ball);
+		}
+		
+		function CreateText() // função de criação de texto
+		{ //posição dos texto dentro do canvas em x e y
+			text2.x = 211; 
+			text2.y = 20;
+			text1.x = 327;
+			text1.y = 20;
+			
+			stage.addChild(text1, text2);
+		}
+		
+		function UpdateScore() //atualização do score
+		{
+			text1.text = "Pontos:" + score1
+			text2.text = "Pontos:" + score2
+		}
+		function UpdateBall() //atualização da bola
+		{
+			ball.x += ballSpeedX;
+			ball.y += ballSpeedY;
+			
+				//colisões
+				if(ball.y < 0) { ballSpeedY = -ballSpeedY;};
+				if(ball.y + ball.image.height > stage.canvas.height) { ballSpeedY = -ballSpeedY;};
+				
+				if(ball.x < 0) //determinando que a bola volte para o meio do canvas após sua colisão com a parede do limite do canvas
+				{ 				ball.x = (stage.canvas.width / 2) - (ball.image.width / 2)
+								ball.y = (stage.canvas.height / 2) - (ball.image.height / 2)
+								score1 += 1
+								createjs.Sound.play("Sound/wall.mp3", "wall");
+				};
+				
+				if(ball.x + ball.image.width > stage.canvas.width)
+				{ 
+								ball.x = (stage.canvas.width / 2) - (ball.image.width / 2)
+								ball.y = (stage.canvas.height / 2) - (ball.image.height / 2)
+								score2 += 1
+								createjs.Sound.play("Sound/wall.mp3", "wall");
+				};
+				
+				
+				//colisão com o player1
+				if (ball.x < player1.x + player1.image.width)
+			{
+				if (ball.y < player1.y + player1.image.height &&
+					ball.y + ball.image.height > player1.y &&
+					ball.x < player1.x + player1.image.width &&
+					ball.x + ball.image.width > player1.x)
+				{				
+					if (ball.x + (ball.image.width / 2) < player1.x &&
+						ballSpeedX > 0)
+					{
+						ballSpeedX *= -1;
+					}			
+					else if (ball.x + (ball.image.width / 2) > player1.x + player1.image.width &&
+							 ballSpeedX < 0)
+					{
+						ballSpeedX *= -1;
+					}			
+					
+					ballSpeedY *= 1;
+					createjs.Sound.play("Sound/hit.mp3" , "hit")
+				}		
+			}
+			
+			//colisão com o player2
+			if (ball.x < player2.x + player2.image.width)
+			{
+				if (ball.y < player2.y + player2.image.height &&
+					ball.y + ball.image.height > player2.y &&
+					ball.x < player2.x + player2.image.width &&
+					ball.x + ball.image.width > player2.x)
+				{				
+					if (ball.x + (ball.image.width / 2) < player2.x &&
+						ballSpeedX > 0)
+					{
+						ballSpeedX *= -1;
+					}			
+					else if (ball.x + (ball.image.width / 2) > player2.x + player2.image.width &&
+							 ballSpeedX < 0)
+					{
+						ballSpeedX *= -1;
+					}			
+					
+					ballSpeedY *= 1;
+					createjs.Sound.play("Sound/hit.mp3" , "hit")
+				}		
+			}
+		if (score1 >= 10)
+			{alert("player 2 ganhou!");
+				 score1 = 0; createjs.Sound.play("sound/playerScore.mp3" , "score");}
+			if (score2 >= 10)
+			{alert("player 1 ganhou!");
+				 score2 = 0; createjs.Sound.play("sound/playerScore.mp3" , "score");}
+		}
+			
+	
+		
+	
+
+    </script>
+	</center>
+</body>
+</html>
